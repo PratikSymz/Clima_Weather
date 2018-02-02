@@ -1,3 +1,1 @@
-
-Sunshine a.k.a "Weather" is the companion Android app for the Udacity course [Developing Android Apps: Android Fundamentals](https://www.udacity.com/course/ud853).
-
+Sunshine is an Android Application which is basically a weather app which gives information about the current weather of any place in the world. 
