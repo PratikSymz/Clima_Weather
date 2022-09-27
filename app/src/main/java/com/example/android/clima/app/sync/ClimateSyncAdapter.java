@@ -1,5 +1,6 @@
 package com.example.android.clima.app.sync;
 
+import android.Manifest;
 import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.app.NotificationManager;
@@ -14,6 +15,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SyncRequest;
 import android.content.SyncResult;
+import android.content.pm.PackageManager;
 import android.content.res.Resources;
 import android.database.Cursor;
 import android.graphics.Bitmap;
@@ -22,12 +24,14 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import android.support.v4.app.NotificationCompat;
-import android.support.v4.app.TaskStackBuilder;
 import android.telephony.SmsManager;
 import android.telephony.TelephonyManager;
 import android.text.format.Time;
 import android.util.Log;
+
+import androidx.core.app.ActivityCompat;
+import androidx.core.app.NotificationCompat;
+import androidx.core.app.TaskStackBuilder;
 
 import com.example.android.clima.app.BuildConfig;
 import com.example.android.clima.app.MainActivity;
@@ -110,7 +114,7 @@ public class ClimateSyncAdapter extends AbstractThreadedSyncAdapter {
                     .appendQueryParameter(FORMAT_PARAM, format)
                     .appendQueryParameter(UNITS_PARAM, units)
                     .appendQueryParameter(DAYS_PARAM, Integer.toString(numDays))
-                    .appendQueryParameter(APPID_PARAM, BuildConfig.OPEN_WEATHER_MAP_API_KEY)
+                    .appendQueryParameter(APPID_PARAM, BuildConfig.APPLICATION_ID)
                     .build();
 
             URL url = new URL(builtUri.toString());
@@ -394,6 +398,16 @@ public class ClimateSyncAdapter extends AbstractThreadedSyncAdapter {
                      */
                     telephonyManager = (TelephonyManager) context
                             .getSystemService(Context.TELEPHONY_SERVICE);
+                    if (ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.READ_SMS) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.READ_PHONE_NUMBERS) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.READ_PHONE_STATE) != PackageManager.PERMISSION_GRANTED) {
+                        // TODO: Consider calling
+                        //    ActivityCompat#requestPermissions
+                        // here to request the missing permissions, and then overriding
+                        //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+                        //                                          int[] grantResults)
+                        // to handle the case where the user grants the permission. See the documentation
+                        // for ActivityCompat#requestPermissions for more details.
+                        return;
+                    }
                     String receiverPhoneNumber = telephonyManager.getLine1Number();
                     if (receiverPhoneNumber == null) {
                         // Do Something
@@ -414,9 +428,9 @@ public class ClimateSyncAdapter extends AbstractThreadedSyncAdapter {
                     }
 
                     /** Uri uri = Uri.parse("smsto:" + receiverPhoneNumber);
-                    Intent smsIntent = new Intent(Intent.ACTION_SENDTO, uri);
-                    smsIntent.putExtra("sms_body", weatherDescMessage);
-                    context.startActivity(smsIntent); */
+                     Intent smsIntent = new Intent(Intent.ACTION_SENDTO, uri);
+                     smsIntent.putExtra("sms_body", weatherDescMessage);
+                     context.startActivity(smsIntent); */
 
                     sendSmsMessage(receiverPhoneNumber, weatherDescMessage);
                     Log.v(LOG_TAG, "Phone No. is: " + receiverPhoneNumber);
@@ -533,10 +547,10 @@ public class ClimateSyncAdapter extends AbstractThreadedSyncAdapter {
         // If the password doesn't exist, the account doesn't exist
         if (null == accountManager.getPassword(newAccount)) {
 
-        /*
-         * Add the account and account type, no password or user data
-         * If successful, return the Account object, otherwise report an error.
-         */
+            /*
+             * Add the account and account type, no password or user data
+             * If successful, return the Account object, otherwise report an error.
+             */
             if (!accountManager.addAccountExplicitly(newAccount, "", null)) {
                 return null;
             }
